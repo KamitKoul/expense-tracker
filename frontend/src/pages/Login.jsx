@@ -136,7 +136,7 @@ export default function Login() {
         </Box>
       </Grid>
 
-      {/* Right Side: Branding/Visual (Approx 66%) */}
+      {/* Right Side: Branding/Visual (Approx 66%) - Text Aligned Extreme Right */}
       <Grid 
         item xs={false} md={8} 
         sx={{ 
@@ -146,18 +146,19 @@ export default function Login() {
           display: { xs: 'none', md: 'flex' },
           flexDirection: 'column',
           justifyContent: 'center',
-          alignItems: 'center',
+          alignItems: 'flex-end', // Aligns Box to the right
           color: 'white',
-          p: 6
+          p: 8,
+          pr: 12 // Extra padding on right to push content near extreme
         }}
       >
-        <Box sx={{ maxWidth: 500, textAlign: 'center' }}>
+        <Box sx={{ maxWidth: 800, textAlign: 'right' }}> {/* Increased maxWidth and right align text */}
           <AutoGraph sx={{ fontSize: 120, mb: 3 }} />
           <Typography variant="h2" fontWeight="900" gutterBottom sx={{ letterSpacing: -2 }}>
             Master your finances
           </Typography>
-          <Typography variant="h5" sx={{ opacity: 0.9, fontWeight: 400 }}>
-            Join over 10,000+ users who are smarter with their money using WalletWise insights.
+          <Typography variant="h4" sx={{ opacity: 0.9, fontWeight: 400, lineHeight: 1.4 }}>
+            Predict your spending and optimize your wealth with our powerful financial engine.
           </Typography>
         </Box>
       </Grid>

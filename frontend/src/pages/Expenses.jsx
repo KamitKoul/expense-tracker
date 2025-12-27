@@ -8,6 +8,8 @@ import ExpenseChart from "../components/ExpenseChart";
 import SpendingTrendChart from "../components/SpendingTrendChart";
 import SpendingPrediction from "../components/SpendingPrediction";
 import SmartInsights from "../components/SmartInsights";
+import CategoryBreakdown from "../components/CategoryBreakdown";
+import AnalyticsSummary from "../components/AnalyticsSummary";
 import { 
   Typography, 
   Box, 
@@ -32,7 +34,8 @@ import {
   ListItemText,
   ListItemButton,
   Divider,
-  TextField
+  TextField,
+  Alert
 } from "@mui/material";
 import LogoutIcon from '@mui/icons-material/Logout';
 import AddIcon from '@mui/icons-material/Add';
@@ -43,6 +46,7 @@ import ReceiptIcon from '@mui/icons-material/Receipt';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import SettingsIcon from '@mui/icons-material/Settings';
 import ErrorBoundary from "../components/ErrorBoundary";
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 
 const drawerWidth = 260;
 
@@ -53,13 +57,15 @@ export default function Expenses() {
   const [filteredExpenses, setFilteredExpenses] = useState([]);
   const [totalSpent, setTotalSpent] = useState(0);
   
+  // Navigation State
+  const [activeTab, setActiveTab] = useState('Dashboard');
+
   // Dialog State
   const [openForm, setOpenForm] = useState(false);
   const [editingExpense, setEditingExpense] = useState(null);
   
   // Budget State
   const [budget, setBudget] = useState(user?.monthlyBudget || 0);
-  const [isUpdatingBudget, setIsUpdatingBudget] = useState(false);
 
   // Filter states
   const [filterMonth, setFilterMonth] = useState(new Date().getMonth() + 1);
@@ -108,10 +114,142 @@ export default function Expenses() {
   const updateBudget = async () => {
     try {
         await API.put("/users/budget", { budget: Number(budget) });
-        setIsUpdatingBudget(false);
+        alert("Budget updated successfully!");
     } catch (err) {
         console.error(err);
         alert("Failed to update budget");
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+      if (!window.confirm("ARE YOU ABSOLUTELY SURE? This will permanently delete your account and all transaction data. This action cannot be undone.")) return;
+      try {
+          await API.delete("/users/me");
+          logout();
+      } catch (err) {
+          console.error(err);
+          alert("Failed to delete account");
+      }
+  };
+
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'Dashboard':
+        return (
+          <Grid container spacing={4}>
+            <Grid item xs={12} lg={8}>
+                <ExpenseSummary year={filterYear} month={filterMonth} refreshTrigger={filteredExpenses} budget={Number(budget)} />
+            </Grid>
+            <Grid item xs={12} lg={4}>
+                <SpendingPrediction currentSpending={totalSpent} month={filterMonth} year={filterYear} />
+                <SmartInsights expenses={filteredExpenses} budget={Number(budget)} totalSpent={totalSpent} />
+            </Grid>
+            <Grid item xs={12} lg={8}>
+                <SpendingTrendChart refreshTrigger={expenses} />
+            </Grid>
+            <Grid item xs={12} lg={4}>
+                <ExpenseChart data={filteredExpenses} />
+            </Grid>
+          </Grid>
+        );
+      case 'Transactions':
+        return (
+          <Box sx={{ mt: 2 }}>
+            <ExpenseList 
+                expenses={filteredExpenses} 
+                refresh={refreshExpenses} 
+                onEdit={handleEdit}
+            />
+          </Box>
+        );
+      case 'Analytics':
+        return (
+          <Box>
+            <AnalyticsSummary data={filteredExpenses} />
+            <Grid container spacing={4}>
+                <Grid item xs={12} lg={8}>
+                    <SpendingTrendChart refreshTrigger={expenses} />
+                </Grid>
+                <Grid item xs={12} lg={4}>
+                    <ExpenseChart data={filteredExpenses} />
+                </Grid>
+                <Grid item xs={12} md={6}>
+                    <CategoryBreakdown data={filteredExpenses} />
+                </Grid>
+                <Grid item xs={12} md={6}>
+                    <Paper elevation={0} sx={{ p: 3, borderRadius: 4, border: '1px solid #f0f0f0', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Typography color="text.secondary">More analytics widgets coming soon...</Typography>
+                    </Paper>
+                </Grid>
+            </Grid>
+          </Box>
+        );
+      case 'Settings':
+        return (
+          <Box sx={{ maxWidth: 800, mt: 2 }}>
+            <Grid container spacing={4}>
+                <Grid item xs={12}>
+                    <Paper elevation={0} sx={{ p: 4, borderRadius: 4, border: '1px solid #f0f0f0' }}>
+                        <Typography variant="h6" gutterBottom fontWeight="700">Account Preferences</Typography>
+                        <Divider sx={{ my: 2 }} />
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                            <Grid container spacing={2}>
+                                <Grid item xs={12} md={6}>
+                                    <Typography variant="subtitle2" gutterBottom>Display Name</Typography>
+                                    <TextField fullWidth value={user?.name} disabled size="small" />
+                                </Grid>
+                                <Grid item xs={12} md={6}>
+                                    <Typography variant="subtitle2" gutterBottom>Email Address</Typography>
+                                    <TextField fullWidth value={user?.email} disabled size="small" />
+                                </Grid>
+                            </Grid>
+                            <Box>
+                                <Typography variant="subtitle2" gutterBottom>Monthly Budget Goal (₹)</Typography>
+                                <Box sx={{ display: 'flex', gap: 2 }}>
+                                    <TextField 
+                                        type="number"
+                                        value={budget} 
+                                        onChange={(e) => setBudget(e.target.value)} 
+                                        size="small" 
+                                        sx={{ maxWidth: 200 }}
+                                    />
+                                    <Button variant="contained" onClick={updateBudget}>Update Goal</Button>
+                                </Box>
+                                <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                                    Your budget goal helps us provide smarter spending insights and warnings.
+                                </Typography>
+                            </Box>
+                        </Box>
+                    </Paper>
+                </Grid>
+
+                <Grid item xs={12}>
+                    <Paper elevation={0} sx={{ p: 4, borderRadius: 4, border: '1px solid #fee2e2', bgcolor: '#fffafa' }}>
+                        <Typography variant="h6" gutterBottom fontWeight="700" color="error">Danger Zone</Typography>
+                        <Divider sx={{ my: 2 }} />
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <Box>
+                                <Typography variant="subtitle1" fontWeight="600">Delete Account</Typography>
+                                <Typography variant="body2" color="text.secondary">
+                                    Permanently remove your account and all associated transaction history.
+                                </Typography>
+                            </Box>
+                            <Button 
+                                variant="outlined" 
+                                color="error" 
+                                startIcon={<DeleteForeverIcon />}
+                                onClick={handleDeleteAccount}
+                            >
+                                Delete Everything
+                            </Button>
+                        </Box>
+                    </Paper>
+                </Grid>
+            </Grid>
+          </Box>
+        );
+      default:
+        return null;
     }
   };
 
@@ -145,51 +283,40 @@ export default function Expenses() {
 
           <List sx={{ px: 2 }}>
               {[
-                  { text: 'Dashboard', icon: <DashboardIcon />, active: true },
+                  { text: 'Dashboard', icon: <DashboardIcon /> },
                   { text: 'Transactions', icon: <ReceiptIcon /> },
                   { text: 'Analytics', icon: <BarChartIcon /> },
                   { text: 'Settings', icon: <SettingsIcon /> },
               ].map((item) => (
                   <ListItem key={item.text} disablePadding sx={{ mb: 1 }}>
                       <ListItemButton 
+                          onClick={() => setActiveTab(item.text)}
                           sx={{ 
                               borderRadius: 2,
-                              bgcolor: item.active ? 'rgba(37, 99, 235, 0.15)' : 'transparent',
-                              color: item.active ? '#60a5fa' : 'rgba(255,255,255,0.7)',
+                              bgcolor: activeTab === item.text ? 'rgba(37, 99, 235, 0.15)' : 'transparent',
+                              color: activeTab === item.text ? '#60a5fa' : 'rgba(255,255,255,0.7)',
                               '&:hover': { bgcolor: 'rgba(255,255,255,0.05)' }
                           }}
                       >
                           <ListItemIcon sx={{ color: 'inherit', minWidth: 40 }}>
                               {item.icon}
                           </ListItemIcon>
-                          <ListItemText primary={item.text} primaryTypographyProps={{ fontWeight: item.active ? 600 : 400 }} />
+                          <ListItemText primary={item.text} primaryTypographyProps={{ fontWeight: activeTab === item.text ? 600 : 400 }} />
                       </ListItemButton>
                   </ListItem>
               ))}
           </List>
 
           <Box sx={{ mt: 'auto', p: 3 }}>
+              {/* Budget Quick Set */}
               <Box sx={{ mb: 4, px: 1 }}>
                   <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: 1, mb: 1, display: 'block' }}>
                       Monthly Goal
                   </Typography>
-                  {isUpdatingBudget ? (
-                      <Box sx={{ display: 'flex', gap: 1 }}>
-                          <TextField 
-                            size="small" 
-                            variant="standard" 
-                            value={budget} 
-                            onChange={(e) => setBudget(e.target.value)}
-                            sx={{ input: { color: 'white', fontWeight: 700 }, '& .MuiInput-underline:before': { borderBottomColor: 'rgba(255,255,255,0.3)' } }}
-                          />
-                          <IconButton size="small" onClick={updateBudget} sx={{ color: '#10b981' }}><AddIcon fontSize="small" /></IconButton>
-                      </Box>
-                  ) : (
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <Typography variant="h6" sx={{ fontWeight: 700 }}>₹{budget}</Typography>
-                          <IconButton size="small" onClick={() => setIsUpdatingBudget(true)} sx={{ color: 'rgba(255,255,255,0.3)' }}><SettingsIcon fontSize="small" /></IconButton>
-                      </Box>
-                  )}
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Typography variant="h6" sx={{ fontWeight: 700 }}>₹{Number(budget).toLocaleString()}</Typography>
+                      <IconButton size="small" onClick={() => setActiveTab('Settings')} sx={{ color: 'rgba(255,255,255,0.3)' }}><SettingsIcon fontSize="small" /></IconButton>
+                  </Box>
               </Box>
 
               <Divider sx={{ bgcolor: 'rgba(255,255,255,0.1)', mb: 3 }} />
@@ -221,10 +348,10 @@ export default function Expenses() {
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 5 }}>
                   <Box>
                       <Typography variant="h4" sx={{ fontWeight: 800, color: '#0f172a', letterSpacing: -1 }}>
-                          Financial Overview
+                          {activeTab}
                       </Typography>
                       <Typography variant="body1" sx={{ color: '#64748b' }}>
-                          Track, analyze and predict your expenses.
+                          {activeTab === 'Dashboard' ? 'Track, analyze and predict your expenses.' : `Manage your ${activeTab.toLowerCase()}.`}
                       </Typography>
                   </Box>
 
@@ -260,34 +387,12 @@ export default function Expenses() {
                   </Box>
               </Box>
 
-              <Grid container spacing={4}>
-                  <Grid item xs={12} lg={8}>
-                      <ExpenseSummary year={filterYear} month={filterMonth} refreshTrigger={filteredExpenses} budget={Number(budget)} />
-                  </Grid>
-                  <Grid item xs={12} lg={4}>
-                      <SpendingPrediction currentSpending={totalSpent} month={filterMonth} year={filterYear} />
-                      <SmartInsights expenses={filteredExpenses} budget={Number(budget)} totalSpent={totalSpent} />
-                  </Grid>
-
-                  <Grid item xs={12} lg={8}>
-                      <SpendingTrendChart refreshTrigger={expenses} />
-                  </Grid>
-                  <Grid item xs={12} lg={4}>
-                      <ExpenseChart data={filteredExpenses} />
-                  </Grid>
-
-                  <Grid item xs={12}>
-                      <ExpenseList 
-                          expenses={filteredExpenses} 
-                          refresh={refreshExpenses} 
-                          onEdit={handleEdit}
-                      />
-                  </Grid>
-              </Grid>
+              {renderContent()}
             </Box>
           </Fade>
         </Box>
 
+        {/* FAB to Add Expense */}
         <Fab 
           color="primary" 
           aria-label="add" 
@@ -300,6 +405,7 @@ export default function Expenses() {
           <AddIcon />
         </Fab>
 
+        {/* Add/Edit Expense Dialog */}
         <Dialog 
           open={openForm} 
           onClose={handleCloseForm}

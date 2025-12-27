@@ -111,9 +111,32 @@ const updateBudget = async (req, res) => {
   }
 };
 
+// @desc   Delete user account and all their data
+// @route  DELETE /api/users/me
+const deleteAccount = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Delete all expenses for this user
+    const Expense = require("../models/Expense");
+    await Expense.deleteMany({ userId: req.user.id });
+    
+    // Delete the user
+    await user.deleteOne();
+
+    res.json({ message: "Account and data deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
   getMe,
   updateBudget,
+  deleteAccount,
 };

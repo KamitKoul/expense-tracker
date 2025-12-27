@@ -140,7 +140,7 @@ export default function Register() {
         </Box>
       </Grid>
 
-      {/* Right Side: Branding/Visual (Approx 66%) - Text Aligned Extreme Right */}
+      {/* Right Side: Branding/Visual (Approx 66%) - Text pushed to ABSOLUTE right */}
       <Grid 
         item xs={false} md={8} 
         sx={{ 
@@ -150,13 +150,13 @@ export default function Register() {
           display: { xs: 'none', md: 'flex' },
           flexDirection: 'column',
           justifyContent: 'center',
-          alignItems: 'flex-end', // Aligns Box to the right
+          alignItems: 'flex-end', 
           color: 'white',
-          p: 8,
-          pr: 12 // Extra padding on right
+          p: 4,
+          pr: 6
         }}
       >
-        <Box sx={{ maxWidth: 800, textAlign: 'right' }}> {/* Increased maxWidth and right align text */}
+        <Box sx={{ maxWidth: '90%', textAlign: 'right' }}>
           <AutoGraph sx={{ fontSize: 120, mb: 3 }} />
           <Typography variant="h2" fontWeight="900" gutterBottom sx={{ letterSpacing: -2 }}>
             Smarter Wealth

@@ -9,10 +9,8 @@ import {
   Typography, 
   Box, 
   Fade, 
-  Button, 
   Grid, 
   FormControl, 
-  InputLabel, 
   Select, 
   MenuItem,
   AppBar,
@@ -20,7 +18,6 @@ import {
   Container,
   IconButton,
   Avatar,
-  Menu,
   Dialog,
   DialogContent,
   DialogTitle,
@@ -88,7 +85,7 @@ export default function Expenses() {
     <Box sx={{ width: '100%', minHeight: '100vh', bgcolor: 'background.default' }}>
       {/* Navbar */}
       <AppBar position="sticky" elevation={0} sx={{ bgcolor: 'white', borderBottom: '1px solid #f0f0f0' }}>
-        <Container maxWidth="lg">
+        <Container maxWidth={false} sx={{ px: { xs: 2, md: 4, lg: 6 } }}>
             <Toolbar disableGutters sx={{ justifyContent: 'space-between' }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Box sx={{ p: 0.5, bgcolor: theme.palette.primary.main, borderRadius: 1 }}>
@@ -119,7 +116,7 @@ export default function Expenses() {
         </Container>
       </AppBar>
 
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Container maxWidth={false} sx={{ px: { xs: 2, md: 4, lg: 6 }, py: 4 }}>
         <Fade in={true}>
           <Box>
             {/* Header & Filters */}
@@ -159,16 +156,18 @@ export default function Expenses() {
             </Box>
 
             <Grid container spacing={4}>
-              {/* Left Column: Stats & Chart */}
-              <Grid item xs={12} md={4}>
-                <Box sx={{ position: { md: 'sticky' }, top: 100 }}>
+              {/* Summary Cards and Charts - Left Side on Large Screens */}
+              <Grid item xs={12} lg={4} xl={3}>
+                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                     <ExpenseSummary year={filterYear} month={filterMonth} refreshTrigger={filteredExpenses} />
-                    <ExpenseChart data={filteredExpenses} />
-                </Box>
+                    <Box sx={{ flexGrow: 1, minHeight: 400 }}>
+                        <ExpenseChart data={filteredExpenses} />
+                    </Box>
+                 </Box>
               </Grid>
 
-              {/* Right Column: List */}
-              <Grid item xs={12} md={8}>
+              {/* Expense List - Right Side on Large Screens */}
+              <Grid item xs={12} lg={8} xl={9}>
                 <ExpenseList 
                   expenses={filteredExpenses} 
                   refresh={refreshExpenses} 

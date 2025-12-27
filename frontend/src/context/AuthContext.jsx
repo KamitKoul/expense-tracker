@@ -37,9 +37,7 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (name, email, password) => {
     const res = await API.post("/users", { name, email, password });
-    localStorage.setItem("token", res.data.token);
-    setToken(res.data.token);
-    setUser(res.data);
+    // Do not auto-login on register
     return res.data;
   };
 

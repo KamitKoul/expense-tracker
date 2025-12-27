@@ -115,12 +115,6 @@ const updateExpense = async (req, res) => {
       return res.status(404).json({ message: "Expense not found" });
     }
 
-    // Check for user
-    if (!req.user) {
-        return res.status(401).json({ message: "User not found" });
-    }
-
-    // Make sure the logged in user matches the expense user
     if (expense.userId.toString() !== req.user.id) {
         return res.status(401).json({ message: "User not authorized" });
     }
@@ -148,12 +142,6 @@ const deleteExpense = async (req, res) => {
       return res.status(404).json({ message: "Expense not found" });
     }
 
-    // Check for user
-    if (!req.user) {
-        return res.status(401).json({ message: "User not found" });
-    }
-
-    // Make sure the logged in user matches the expense user
     if (expense.userId.toString() !== req.user.id) {
         return res.status(401).json({ message: "User not authorized" });
     }
@@ -169,10 +157,12 @@ const deleteExpense = async (req, res) => {
 // @desc   Get spending trends (last 6 months)
 // @route  GET /api/expenses/trends
 const getSpendingTrends = async (req, res) => {
+  console.log(`Fetching trends for user: ${req.user.id}`);
   try {
     const sixMonthsAgo = new Date();
     sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
     sixMonthsAgo.setDate(1);
+    sixMonthsAgo.setHours(0, 0, 0, 0);
 
     const trends = await Expense.aggregate([
       {
@@ -197,6 +187,7 @@ const getSpendingTrends = async (req, res) => {
 
     res.json(trends);
   } catch (error) {
+    console.error("Trends Error:", error);
     res.status(500).json({ error: error.message });
   }
 };

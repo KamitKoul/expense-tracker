@@ -14,11 +14,11 @@ const { protect } = require("../middleware/authMiddleware");
 // All expense routes should be protected
 router.use(protect);
 
+router.get("/trends", getSpendingTrends); // Moved up
 router.post("/", createExpense);
 router.get("/", getExpenses);
 router.get("/monthly", getMonthlyTotal);
 router.get("/category-summary", getCategorySummary);
-router.get("/trends", getSpendingTrends);
 router.put("/:id", updateExpense);
 router.delete("/:id", deleteExpense);
 

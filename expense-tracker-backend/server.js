@@ -16,6 +16,12 @@ app.use(express.json());
 app.use("/api/users", require("./routes/userRoutes"));
 app.use("/api/expenses", require("./routes/expenseRoutes"));
 
+// 404 handler for debugging
+app.use((req, res) => {
+  console.log(`404 - Not Found: ${req.method} ${req.originalUrl}`);
+  res.status(404).json({ message: `Route ${req.method} ${req.url} not found` });
+});
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

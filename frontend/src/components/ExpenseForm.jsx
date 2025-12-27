@@ -16,7 +16,7 @@ import AddCircleIcon from '@mui/icons-material/AddCircle';
 import EditIcon from '@mui/icons-material/Edit';
 import CancelIcon from '@mui/icons-material/Cancel';
 
-export default function ExpenseForm({ userId, refresh, editingExpense, onCancelEdit }) {
+export default function ExpenseForm({ refresh, editingExpense, onCancelEdit }) {
   const getToday = () => new Date().toISOString().split('T')[0];
 
   const [form, setForm] = useState(editingExpense ? {
@@ -32,27 +32,32 @@ export default function ExpenseForm({ userId, refresh, editingExpense, onCancelE
   });
 
   const submit = async () => {
-    if (!userId) return alert("Select user first");
+    // Basic validation
+    if (!form.title || !form.amount) return alert("Please fill all fields");
 
-    if (editingExpense) {
-        await API.put(`/expenses/${editingExpense._id}`, {
-            ...form,
-            amount: Number(form.amount)
-        });
-        onCancelEdit();
-    } else {
-        await API.post("/expenses", {
-            ...form,
-            userId,
-            amount: Number(form.amount)
-        });
-    }
+    try {
+      if (editingExpense) {
+          await API.put(`/expenses/${editingExpense._id}`, {
+              ...form,
+              amount: Number(form.amount)
+          });
+          onCancelEdit();
+      } else {
+          await API.post("/expenses", {
+              ...form,
+              amount: Number(form.amount)
+          });
+      }
 
-    // Reset form if not unmounted
-    if (!editingExpense) {
-        setForm({ title: "", amount: "", category: "Food", expenseDate: getToday() });
+      // Reset form if not unmounted or if adding new
+      if (!editingExpense) {
+          setForm({ title: "", amount: "", category: "Food", expenseDate: getToday() });
+      }
+      refresh();
+    } catch (error) {
+      console.error("Error saving expense", error);
+      alert("Failed to save expense");
     }
-    refresh();
   };
 
   return (

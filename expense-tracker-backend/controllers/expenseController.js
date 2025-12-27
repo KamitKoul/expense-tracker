@@ -6,19 +6,14 @@ const User = require("../models/User");
 // @route  POST /api/expenses
 const createExpense = async (req, res) => {
   try {
-    const { userId, title, amount, category, expenseDate } = req.body;
+    const { title, amount, category, expenseDate } = req.body;
 
-    if (!userId || !title || !amount || !category || !expenseDate) {
+    if (!title || !amount || !category || !expenseDate) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    const userExists = await User.findById(userId);
-    if (!userExists) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
     const expense = await Expense.create({
-      userId,
+      userId: req.user.id,
       title,
       amount,
       category,
@@ -31,13 +26,11 @@ const createExpense = async (req, res) => {
   }
 };
 
-// @desc   Get all expenses for a user
-// @route  GET /api/expenses/user/:userId
-const getExpensesByUser = async (req, res) => {
+// @desc   Get all expenses for the logged-in user
+// @route  GET /api/expenses
+const getExpenses = async (req, res) => {
   try {
-    const { userId } = req.params;
-
-    const expenses = await Expense.find({ userId })
+    const expenses = await Expense.find({ userId: req.user.id })
       .sort({ expenseDate: -1 });
 
     res.json(expenses);
@@ -47,10 +40,9 @@ const getExpensesByUser = async (req, res) => {
 };
 
 // @desc   Get total expenses for a user in a month
-// @route  GET /api/expenses/user/:userId/monthly
+// @route  GET /api/expenses/monthly
 const getMonthlyTotal = async (req, res) => {
   try {
-    const { userId } = req.params;
     const { year, month } = req.query;
 
     if (!year || !month) {
@@ -63,7 +55,7 @@ const getMonthlyTotal = async (req, res) => {
     const result = await Expense.aggregate([
       {
         $match: {
-          userId: new mongoose.Types.ObjectId(userId),
+          userId: new mongoose.Types.ObjectId(req.user.id),
           expenseDate: { $gte: startDate, $lt: endDate }
         }
       },
@@ -84,15 +76,13 @@ const getMonthlyTotal = async (req, res) => {
 };
 
 // @desc   Category-wise expense summary
-// @route  GET /api/expenses/user/:userId/category-summary
+// @route  GET /api/expenses/category-summary
 const getCategorySummary = async (req, res) => {
   try {
-    const { userId } = req.params;
-
     const summary = await Expense.aggregate([
       {
         $match: {
-          userId: new mongoose.Types.ObjectId(userId)
+          userId: new mongoose.Types.ObjectId(req.user.id)
         }
       },
       {
@@ -125,6 +115,16 @@ const updateExpense = async (req, res) => {
       return res.status(404).json({ message: "Expense not found" });
     }
 
+    // Check for user
+    if (!req.user) {
+        return res.status(401).json({ message: "User not found" });
+    }
+
+    // Make sure the logged in user matches the expense user
+    if (expense.userId.toString() !== req.user.id) {
+        return res.status(401).json({ message: "User not authorized" });
+    }
+
     expense.title = title || expense.title;
     expense.amount = amount || expense.amount;
     expense.category = category || expense.category;
@@ -142,11 +142,23 @@ const updateExpense = async (req, res) => {
 const deleteExpense = async (req, res) => {
   try {
     const { id } = req.params;
-    const expense = await Expense.findByIdAndDelete(id);
+    const expense = await Expense.findById(id);
 
     if (!expense) {
       return res.status(404).json({ message: "Expense not found" });
     }
+
+    // Check for user
+    if (!req.user) {
+        return res.status(401).json({ message: "User not found" });
+    }
+
+    // Make sure the logged in user matches the expense user
+    if (expense.userId.toString() !== req.user.id) {
+        return res.status(401).json({ message: "User not authorized" });
+    }
+
+    await expense.deleteOne();
 
     res.json({ message: "Expense removed" });
   } catch (error) {
@@ -156,7 +168,7 @@ const deleteExpense = async (req, res) => {
 
 module.exports = {
   createExpense,
-  getExpensesByUser,
+  getExpenses,
   getMonthlyTotal,
   getCategorySummary,
   updateExpense,

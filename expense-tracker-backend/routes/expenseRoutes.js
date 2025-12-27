@@ -1,19 +1,22 @@
 const express = require("express");
+const router = express.Router();
 const {
   createExpense,
-  getExpensesByUser,
+  getExpenses,
   getMonthlyTotal,
   getCategorySummary,
   updateExpense,
   deleteExpense
 } = require("../controllers/expenseController");
+const { protect } = require("../middleware/authMiddleware");
 
-const router = express.Router();
+// All expense routes should be protected
+router.use(protect);
 
 router.post("/", createExpense);
-router.get("/user/:userId", getExpensesByUser);
-router.get("/user/:userId/monthly", getMonthlyTotal);
-router.get("/user/:userId/category-summary", getCategorySummary);
+router.get("/", getExpenses); // Changed from /user/:userId to /
+router.get("/monthly", getMonthlyTotal); // Changed from /user/:userId/monthly to /monthly
+router.get("/category-summary", getCategorySummary); // Changed from /user/:userId/category-summary
 router.put("/:id", updateExpense);
 router.delete("/:id", deleteExpense);
 

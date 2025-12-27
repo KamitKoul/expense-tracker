@@ -13,7 +13,7 @@ import {
   Box, 
   Fade, 
   Button, 
-  Grid2 as Grid, 
+  Grid, 
   FormControl, 
   Select, 
   MenuItem,
@@ -43,7 +43,6 @@ import ReceiptIcon from '@mui/icons-material/Receipt';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import SettingsIcon from '@mui/icons-material/Settings';
 import ErrorBoundary from "../components/ErrorBoundary";
-import SavingsIcon from '@mui/icons-material/Savings';
 
 const drawerWidth = 260;
 
@@ -110,7 +109,6 @@ export default function Expenses() {
     try {
         await API.put("/users/budget", { budget: Number(budget) });
         setIsUpdatingBudget(false);
-        // We might want to update local user context too, but for now just refresh local state
     } catch (err) {
         console.error(err);
         alert("Failed to update budget");
@@ -171,7 +169,6 @@ export default function Expenses() {
           </List>
 
           <Box sx={{ mt: 'auto', p: 3 }}>
-              {/* Budget Quick Set */}
               <Box sx={{ mb: 4, px: 1 }}>
                   <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: 1, mb: 1, display: 'block' }}>
                       Monthly Goal
@@ -264,25 +261,22 @@ export default function Expenses() {
               </Box>
 
               <Grid container spacing={4}>
-                  {/* Top Row: Summary & Prediction */}
-                  <Grid size={{ xs: 12, lg: 8 }}>
+                  <Grid item xs={12} lg={8}>
                       <ExpenseSummary year={filterYear} month={filterMonth} refreshTrigger={filteredExpenses} budget={Number(budget)} />
                   </Grid>
-                  <Grid size={{ xs: 12, lg: 4 }}>
+                  <Grid item xs={12} lg={4}>
                       <SpendingPrediction currentSpending={totalSpent} month={filterMonth} year={filterYear} />
                       <SmartInsights expenses={filteredExpenses} budget={Number(budget)} totalSpent={totalSpent} />
                   </Grid>
 
-                  {/* Middle Row: Trends & Charts */}
-                  <Grid size={{ xs: 12, lg: 8 }}>
+                  <Grid item xs={12} lg={8}>
                       <SpendingTrendChart refreshTrigger={expenses} />
                   </Grid>
-                  <Grid size={{ xs: 12, lg: 4 }}>
+                  <Grid item xs={12} lg={4}>
                       <ExpenseChart data={filteredExpenses} />
                   </Grid>
 
-                  {/* Bottom Row: Transactions */}
-                  <Grid size={{ xs: 12 }}>
+                  <Grid item xs={12}>
                       <ExpenseList 
                           expenses={filteredExpenses} 
                           refresh={refreshExpenses} 
@@ -294,7 +288,6 @@ export default function Expenses() {
           </Fade>
         </Box>
 
-        {/* FAB to Add Expense */}
         <Fab 
           color="primary" 
           aria-label="add" 
@@ -307,7 +300,6 @@ export default function Expenses() {
           <AddIcon />
         </Fab>
 
-        {/* Add/Edit Expense Dialog */}
         <Dialog 
           open={openForm} 
           onClose={handleCloseForm}

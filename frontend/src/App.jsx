@@ -5,6 +5,7 @@ import Expenses from "./pages/Expenses";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import { CircularProgress, Box } from "@mui/material";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 function PrivateRoute({ children }) {
   const { user, loading } = useContext(AuthContext);
@@ -16,18 +17,20 @@ function PrivateRoute({ children }) {
 
 function App() {
   return (
-    <Routes>
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route 
-        path="/" 
-        element={
-          <PrivateRoute>
-            <Expenses />
-          </PrivateRoute>
-        } 
-      />
-    </Routes>
+    <ErrorBoundary>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route 
+          path="/" 
+          element={
+            <PrivateRoute>
+              <Expenses />
+            </PrivateRoute>
+          } 
+        />
+      </Routes>
+    </ErrorBoundary>
   );
 }
 

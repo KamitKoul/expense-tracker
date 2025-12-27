@@ -2,26 +2,29 @@ import { Paper, Typography, Box, LinearProgress } from "@mui/material";
 import BoltIcon from '@mui/icons-material/Bolt';
 
 export default function SpendingPrediction({ currentSpending, month, year }) {
-  // Ensure currentSpending is a valid number
-  if (typeof currentSpending !== 'number' || isNaN(currentSpending)) {
-    return null;
-  }
-  
   const daysInMonth = (y, m) => new Date(y, m, 0).getDate();
   const today = new Date();
   
+  // Validate inputs
+  const safeSpending = Number(currentSpending) || 0;
+  const safeMonth = Number(month);
+  const safeYear = Number(year);
+
   // Only calculate if the viewing month is the current month
-  const isCurrentMonth = today.getMonth() + 1 === month && today.getFullYear() === year;
+  const isCurrentMonth = today.getMonth() + 1 === safeMonth && today.getFullYear() === safeYear;
   
   if (!isCurrentMonth) return null;
 
   const currentDay = today.getDate();
-  if (currentDay === 0) return null; // Avoid division by zero
-
-  const totalDays = daysInMonth(year, month);
-  const dailyAverage = currentSpending / currentDay;
+  const totalDays = daysInMonth(safeYear, safeMonth);
+  
+  // Avoid division by zero (unlikely but safe)
+  const dailyAverage = currentDay > 0 ? safeSpending / currentDay : 0;
   const predictedTotal = dailyAverage * totalDays;
   const percentageOfDays = (currentDay / totalDays) * 100;
+
+  // Safe value for LinearProgress
+  const progressValue = Math.min(Math.max(percentageOfDays, 0), 100);
 
   return (
     <Paper 
@@ -54,11 +57,11 @@ export default function SpendingPrediction({ currentSpending, month, year }) {
         <Box sx={{ width: '100%', mb: 1 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
                 <Typography variant="caption" sx={{ opacity: 0.7 }}>Month Progress</Typography>
-                <Typography variant="caption" sx={{ opacity: 0.7 }}>{Math.round(percentageOfDays)}%</Typography>
+                <Typography variant="caption" sx={{ opacity: 0.7 }}>{Math.round(progressValue)}%</Typography>
             </Box>
             <LinearProgress 
                 variant="determinate" 
-                value={percentageOfDays} 
+                value={progressValue} 
                 sx={{ 
                     height: 6, 
                     borderRadius: 3, 

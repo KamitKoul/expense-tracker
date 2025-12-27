@@ -30,7 +30,6 @@ import {
   ListItemIcon,
   ListItemText,
   ListItemButton,
-  Button,
   Divider
 } from "@mui/material";
 import LogoutIcon from '@mui/icons-material/Logout';

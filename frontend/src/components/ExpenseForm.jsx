@@ -8,13 +8,11 @@ import {
   FormControl, 
   InputLabel, 
   Grid, 
-  Paper, 
   Typography,
-  Box
+  Box,
+  InputAdornment
 } from "@mui/material";
-import AddCircleIcon from '@mui/icons-material/AddCircle';
-import EditIcon from '@mui/icons-material/Edit';
-import CancelIcon from '@mui/icons-material/Cancel';
+import SaveIcon from '@mui/icons-material/Save';
 
 export default function ExpenseForm({ refresh, editingExpense, onCancelEdit }) {
   const getToday = () => new Date().toISOString().split('T')[0];
@@ -41,7 +39,6 @@ export default function ExpenseForm({ refresh, editingExpense, onCancelEdit }) {
               ...form,
               amount: Number(form.amount)
           });
-          onCancelEdit();
       } else {
           await API.post("/expenses", {
               ...form,
@@ -54,6 +51,7 @@ export default function ExpenseForm({ refresh, editingExpense, onCancelEdit }) {
           setForm({ title: "", amount: "", category: "Food", expenseDate: getToday() });
       }
       refresh();
+      if (onCancelEdit) onCancelEdit(); // Close dialog on success
     } catch (error) {
       console.error("Error saving expense", error);
       alert("Failed to save expense");
@@ -61,31 +59,31 @@ export default function ExpenseForm({ refresh, editingExpense, onCancelEdit }) {
   };
 
   return (
-    <Paper elevation={3} sx={{ p: 3, mb: 4 }}>
-      <Typography variant="h6" gutterBottom color="primary" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-        {editingExpense ? <><EditIcon /> Edit Expense</> : <><AddCircleIcon /> Add Expense</>}
-      </Typography>
-      
-      <Grid container spacing={2}>
-        <Grid item xs={12} sm={3}>
+    <Box sx={{ pt: 1 }}>
+      <Grid container spacing={3}>
+        <Grid item xs={12}>
           <TextField
             fullWidth
-            label="Title"
+            label="What did you spend on?"
+            placeholder="e.g., Grocery shopping, Netflix subscription"
             value={form.title}
             onChange={e => setForm({ ...form, title: e.target.value })}
+            variant="outlined"
           />
         </Grid>
-        <Grid item xs={12} sm={3}>
+        <Grid item xs={12} sm={6}>
           <TextField
             fullWidth
             type="number"
             label="Amount"
             value={form.amount}
             onChange={e => setForm({ ...form, amount: e.target.value })}
-            InputProps={{ startAdornment: <Typography sx={{ mr: 1 }}>₹</Typography> }}
+            InputProps={{ 
+                startAdornment: <InputAdornment position="start">₹</InputAdornment> 
+            }}
           />
         </Grid>
-        <Grid item xs={12} sm={3}>
+        <Grid item xs={12} sm={6}>
           <FormControl fullWidth>
             <InputLabel>Category</InputLabel>
             <Select
@@ -99,7 +97,7 @@ export default function ExpenseForm({ refresh, editingExpense, onCancelEdit }) {
             </Select>
           </FormControl>
         </Grid>
-        <Grid item xs={12} sm={3}>
+        <Grid item xs={12}>
           <TextField
             fullWidth
             type="date"
@@ -111,30 +109,18 @@ export default function ExpenseForm({ refresh, editingExpense, onCancelEdit }) {
         </Grid>
         
         <Grid item xs={12}>
-          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
-             {editingExpense && (
-              <Button 
-                variant="outlined" 
-                color="secondary" 
-                startIcon={<CancelIcon />}
-                onClick={() => {
-                  onCancelEdit();
-                }}
-              >
-                Cancel
-              </Button>
-            )}
-            <Button 
-              variant="contained" 
-              color="primary" 
-              startIcon={editingExpense ? <EditIcon /> : <AddCircleIcon />}
-              onClick={submit}
-            >
-              {editingExpense ? "Update Expense" : "Add Expense"}
-            </Button>
-          </Box>
+          <Button 
+            fullWidth
+            variant="contained" 
+            size="large"
+            startIcon={<SaveIcon />}
+            onClick={submit}
+            sx={{ height: 48, mt: 2 }}
+          >
+            {editingExpense ? "Save Changes" : "Add Transaction"}
+          </Button>
         </Grid>
       </Grid>
-    </Paper>
+    </Box>
   );
 }

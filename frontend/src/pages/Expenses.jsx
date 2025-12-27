@@ -16,24 +16,39 @@ import {
   Select, 
   MenuItem,
   AppBar,
-  Toolbar
+  Toolbar,
+  Container,
+  IconButton,
+  Avatar,
+  Menu,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  Fab,
+  Tooltip,
+  useTheme
 } from "@mui/material";
 import LogoutIcon from '@mui/icons-material/Logout';
+import AddIcon from '@mui/icons-material/Add';
+import FilterListIcon from '@mui/icons-material/FilterList';
+import CloseIcon from '@mui/icons-material/Close';
 
 export default function Expenses() {
   const { user, logout } = useContext(AuthContext);
+  const theme = useTheme();
   const [expenses, setExpenses] = useState([]);
   const [filteredExpenses, setFilteredExpenses] = useState([]);
-  const [editingExpense, setEditingExpense] = useState(null);
   
+  // Dialog State
+  const [openForm, setOpenForm] = useState(false);
+  const [editingExpense, setEditingExpense] = useState(null);
+
   // Filter states
   const [filterMonth, setFilterMonth] = useState(new Date().getMonth() + 1);
   const [filterYear, setFilterYear] = useState(new Date().getFullYear());
 
   const fetchExpensesData = async () => {
     try {
-      // Fetch all expenses, we can filter locally or via API
-      // Since API supports get all for user, let's do that and filter locally for responsiveness
       const res = await API.get(`/expenses`);
       return res.data;
     } catch (error) {
@@ -51,7 +66,6 @@ export default function Expenses() {
     refreshExpenses();
   }, [refreshExpenses]);
 
-  // Apply filters
   useEffect(() => {
     const filtered = expenses.filter(exp => {
       const d = new Date(exp.expenseDate);
@@ -60,68 +74,145 @@ export default function Expenses() {
     setFilteredExpenses(filtered);
   }, [expenses, filterMonth, filterYear]);
 
+  const handleEdit = (expense) => {
+    setEditingExpense(expense);
+    setOpenForm(true);
+  };
+
+  const handleCloseForm = () => {
+    setOpenForm(false);
+    setEditingExpense(null);
+  };
+
   return (
     <Box sx={{ width: '100%', minHeight: '100vh', bgcolor: 'background.default' }}>
-      <AppBar position="static">
-        <Toolbar>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            💰 Expense Tracker
-          </Typography>
-          <Typography variant="subtitle1" sx={{ mr: 2 }}>
-            Welcome, {user?.name}
-          </Typography>
-          <Button color="inherit" onClick={logout} startIcon={<LogoutIcon />}>
-            Logout
-          </Button>
-        </Toolbar>
-      </AppBar>
-
-      <Box sx={{ maxWidth: '1200px', mx: 'auto', p: 3 }}>
-        <Fade in={true}>
-          <Box>
-            {/* Filter Section */}
-            <Box sx={{ display: 'flex', gap: 2, mb: 4, justifyContent: 'flex-end', alignItems: 'center' }}>
-              <Typography variant="body1">Filter by:</Typography>
-              <FormControl size="small" sx={{ minWidth: 120 }}>
-                <InputLabel>Month</InputLabel>
-                <Select value={filterMonth} label="Month" onChange={(e) => setFilterMonth(e.target.value)}>
-                  {Array.from({ length: 12 }, (_, i) => i + 1).map(m => (
-                    <MenuItem key={m} value={m}>{new Date(0, m-1).toLocaleString('default', { month: 'long' })}</MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-              <FormControl size="small" sx={{ minWidth: 100 }}>
-                <InputLabel>Year</InputLabel>
-                <Select value={filterYear} label="Year" onChange={(e) => setFilterYear(e.target.value)}>
-                  {[2023, 2024, 2025, 2026].map(y => (
-                    <MenuItem key={y} value={y}>{y}</MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+      {/* Navbar */}
+      <AppBar position="sticky" elevation={0} sx={{ bgcolor: 'white', borderBottom: '1px solid #f0f0f0' }}>
+        <Container maxWidth="lg">
+            <Toolbar disableGutters sx={{ justifyContent: 'space-between' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box sx={{ p: 0.5, bgcolor: theme.palette.primary.main, borderRadius: 1 }}>
+                    <Typography variant="h6" sx={{ color: 'white', fontWeight: 'bold', lineHeight: 1 }}>₹</Typography>
+                </Box>
+                <Typography variant="h6" sx={{ color: 'text.primary', fontWeight: 800, letterSpacing: -0.5 }}>
+                    ExpenseTracker
+                </Typography>
             </Box>
 
-            <Grid container spacing={3}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Box sx={{ textAlign: 'right', display: { xs: 'none', sm: 'block' } }}>
+                    <Typography variant="subtitle2" sx={{ color: 'text.primary', fontWeight: 600 }}>
+                        {user?.name}
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                        {user?.email}
+                    </Typography>
+                </Box>
+                <Avatar sx={{ bgcolor: theme.palette.primary.light }}>{user?.name?.[0]}</Avatar>
+                <Tooltip title="Logout">
+                    <IconButton onClick={logout} color="default">
+                        <LogoutIcon />
+                    </IconButton>
+                </Tooltip>
+            </Box>
+            </Toolbar>
+        </Container>
+      </AppBar>
+
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Fade in={true}>
+          <Box>
+            {/* Header & Filters */}
+            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'stretch', md: 'center' }, mb: 4, gap: 2 }}>
+              <Box>
+                <Typography variant="h4" sx={{ color: 'text.primary', mb: 1 }}>Dashboard</Typography>
+                <Typography variant="body1" sx={{ color: 'text.secondary' }}>Overview of your spending habits</Typography>
+              </Box>
+
+              <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', bgcolor: 'white', p: 1, borderRadius: 3, border: '1px solid #f0f0f0' }}>
+                <FilterListIcon color="action" sx={{ ml: 1 }} />
+                <FormControl variant="standard" sx={{ minWidth: 100 }}>
+                  <Select 
+                    disableUnderline
+                    value={filterMonth} 
+                    onChange={(e) => setFilterMonth(e.target.value)}
+                    sx={{ fontWeight: 500 }}
+                  >
+                    {Array.from({ length: 12 }, (_, i) => i + 1).map(m => (
+                      <MenuItem key={m} value={m}>{new Date(0, m-1).toLocaleString('default', { month: 'short' })}</MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+                <FormControl variant="standard" sx={{ minWidth: 80 }}>
+                  <Select 
+                    disableUnderline
+                    value={filterYear} 
+                    onChange={(e) => setFilterYear(e.target.value)}
+                    sx={{ fontWeight: 500 }}
+                  >
+                    {[2023, 2024, 2025, 2026].map(y => (
+                      <MenuItem key={y} value={y}>{y}</MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Box>
+            </Box>
+
+            <Grid container spacing={4}>
+              {/* Left Column: Stats & Chart */}
+              <Grid item xs={12} md={4}>
+                <Box sx={{ position: { md: 'sticky' }, top: 100 }}>
+                    <ExpenseSummary year={filterYear} month={filterMonth} refreshTrigger={filteredExpenses} />
+                    <ExpenseChart data={filteredExpenses} />
+                </Box>
+              </Grid>
+
+              {/* Right Column: List */}
               <Grid item xs={12} md={8}>
-                <ExpenseSummary year={filterYear} month={filterMonth} refreshTrigger={filteredExpenses} />
-                <ExpenseForm 
-                  key={editingExpense ? editingExpense._id : 'new'}
-                  refresh={refreshExpenses} 
-                  editingExpense={editingExpense} 
-                  onCancelEdit={() => setEditingExpense(null)}
-                />
                 <ExpenseList 
                   expenses={filteredExpenses} 
                   refresh={refreshExpenses} 
-                  onEdit={setEditingExpense}
+                  onEdit={handleEdit}
                 />
-              </Grid>
-              <Grid item xs={12} md={4}>
-                 <ExpenseChart data={filteredExpenses} />
               </Grid>
             </Grid>
           </Box>
         </Fade>
-      </Box>
+      </Container>
+
+      {/* FAB to Add Expense */}
+      <Fab 
+        color="primary" 
+        aria-label="add" 
+        sx={{ position: 'fixed', bottom: 32, right: 32, boxShadow: theme.shadows[10] }}
+        onClick={() => {
+            setEditingExpense(null);
+            setOpenForm(true);
+        }}
+      >
+        <AddIcon />
+      </Fab>
+
+      {/* Add/Edit Expense Dialog */}
+      <Dialog 
+        open={openForm} 
+        onClose={handleCloseForm}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{ sx: { borderRadius: 4 } }}
+      >
+        <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', pb: 1 }}>
+            <Typography variant="h6">{editingExpense ? 'Edit Transaction' : 'New Transaction'}</Typography>
+            <IconButton onClick={handleCloseForm} size="small"><CloseIcon /></IconButton>
+        </DialogTitle>
+        <DialogContent>
+            <ExpenseForm 
+                refresh={refreshExpenses} 
+                editingExpense={editingExpense} 
+                onCancelEdit={handleCloseForm}
+            />
+        </DialogContent>
+      </Dialog>
     </Box>
   );
 }

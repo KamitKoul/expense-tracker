@@ -9,69 +9,94 @@ import {
   Paper, 
   IconButton, 
   Typography,
-  Tooltip
+  Tooltip,
+  Box,
+  Chip
 } from "@mui/material";
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
+import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 
 export default function ExpenseList({ expenses, refresh, onEdit }) {
   const remove = async (id) => {
-    if (!window.confirm("Are you sure?")) return;
+    if (!window.confirm("Are you sure you want to delete this expense?")) return;
     await API.delete(`/expenses/${id}`);
     refresh();
   };
 
+  const getCategoryColor = (category) => {
+      const colors = {
+          Food: 'primary',
+          Travel: 'secondary',
+          Rent: 'error',
+          Shopping: 'warning',
+          Other: 'default'
+      };
+      return colors[category] || 'default';
+  };
+
   return (
-    <Paper elevation={3} sx={{ width: '100%', overflow: 'hidden' }}>
-      <Typography variant="h6" sx={{ p: 2, backgroundColor: '#f5f5f5' }}>
-        Expense History
-      </Typography>
+    <Paper elevation={0} sx={{ width: '100%', overflow: 'hidden', border: '1px solid #f0f0f0', borderRadius: 4 }}>
+      <Box sx={{ p: 3, borderBottom: '1px solid #f0f0f0', display: 'flex', alignItems: 'center', gap: 1 }}>
+        <ReceiptLongIcon color="action" />
+        <Typography variant="h6">
+            Recent Transactions
+        </Typography>
+      </Box>
+      
       {expenses.length === 0 ? (
-         <Typography sx={{ p: 3, textAlign: 'center', color: 'text.secondary' }}>
-           No expenses recorded yet.
-         </Typography>
+         <Box sx={{ p: 8, textAlign: 'center' }}>
+           <Typography variant="body1" color="text.secondary" gutterBottom>
+             No transactions found for this period.
+           </Typography>
+           <Typography variant="body2" color="text.secondary">
+             Click the + button to add a new expense.
+           </Typography>
+         </Box>
       ) : (
-        <TableContainer sx={{ maxHeight: 440 }}>
-          <Table stickyHeader aria-label="sticky table">
+        <TableContainer sx={{ maxHeight: 600 }}>
+          <Table stickyHeader aria-label="expense table">
             <TableHead>
               <TableRow>
-                <TableCell><strong>Date</strong></TableCell>
-                <TableCell><strong>Title</strong></TableCell>
-                <TableCell><strong>Category</strong></TableCell>
-                <TableCell align="right"><strong>Amount (₹)</strong></TableCell>
-                <TableCell align="center"><strong>Actions</strong></TableCell>
+                <TableCell sx={{ fontWeight: 'bold', color: 'text.secondary' }}>Date</TableCell>
+                <TableCell sx={{ fontWeight: 'bold', color: 'text.secondary' }}>Title</TableCell>
+                <TableCell sx={{ fontWeight: 'bold', color: 'text.secondary' }}>Category</TableCell>
+                <TableCell align="right" sx={{ fontWeight: 'bold', color: 'text.secondary' }}>Amount</TableCell>
+                <TableCell align="right" sx={{ fontWeight: 'bold', color: 'text.secondary' }}>Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {expenses.map((row) => (
-                <TableRow hover role="checkbox" tabIndex={-1} key={row._id}>
+                <TableRow hover role="checkbox" tabIndex={-1} key={row._id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                  <TableCell component="th" scope="row">
+                    {new Date(row.expenseDate).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}
+                  </TableCell>
                   <TableCell>
-                    {new Date(row.expenseDate).toLocaleDateString()}
+                    <Typography variant="body2" fontWeight="500">{row.title}</Typography>
                   </TableCell>
-                  <TableCell>{row.title}</TableCell>
                   <TableCell>
-                    <span style={{ 
-                      padding: '4px 8px', 
-                      borderRadius: '12px', 
-                      backgroundColor: '#e3f2fd', 
-                      color: '#1565c0',
-                      fontSize: '0.875rem'
-                    }}>
-                      {row.category}
-                    </span>
+                    <Chip 
+                        label={row.category} 
+                        size="small" 
+                        color={getCategoryColor(row.category)} 
+                        variant="soft" // If supported by custom theme, else it falls back or ignores
+                        sx={{ fontWeight: 500 }}
+                    />
                   </TableCell>
-                  <TableCell align="right" sx={{ fontWeight: 'bold' }}>
-                    {row.amount}
+                  <TableCell align="right">
+                    <Typography fontWeight="bold" color={row.amount > 1000 ? 'error.main' : 'text.primary'}>
+                        ₹{row.amount.toLocaleString()}
+                    </Typography>
                   </TableCell>
-                  <TableCell align="center">
+                  <TableCell align="right">
                     <Tooltip title="Edit">
-                      <IconButton onClick={() => onEdit(row)} color="primary">
-                        <EditIcon />
+                      <IconButton onClick={() => onEdit(row)} size="small" sx={{ mr: 1 }}>
+                        <EditIcon fontSize="small" />
                       </IconButton>
                     </Tooltip>
                     <Tooltip title="Delete">
-                      <IconButton onClick={() => remove(row._id)} color="error">
-                        <DeleteIcon />
+                      <IconButton onClick={() => remove(row._id)} size="small" color="error">
+                        <DeleteIcon fontSize="small" />
                       </IconButton>
                     </Tooltip>
                   </TableCell>

@@ -1,10 +1,9 @@
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { Paper, Typography, Box } from "@mui/material";
 
-const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8"];
+const COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899"];
 
 export default function ExpenseChart({ data }) {
-  // Aggregate data by category locally if not already done
   const chartData = data.reduce((acc, curr) => {
     const found = acc.find(item => item.name === curr.category);
     if (found) {
@@ -15,10 +14,12 @@ export default function ExpenseChart({ data }) {
     return acc;
   }, []);
 
+  if (chartData.length === 0) return null;
+
   return (
-    <Paper elevation={3} sx={{ p: 3, mb: 4 }}>
-      <Typography variant="h6" gutterBottom color="primary">
-        Spending by Category
+    <Paper elevation={0} sx={{ p: 3, height: '100%', borderRadius: 4, border: '1px solid #e5e7eb' }}>
+      <Typography variant="h6" gutterBottom sx={{ fontWeight: 700, color: 'text.secondary' }}>
+        Spending Distribution
       </Typography>
       <Box sx={{ width: '100%', height: 300 }}>
         <ResponsiveContainer>
@@ -27,18 +28,20 @@ export default function ExpenseChart({ data }) {
               data={chartData}
               cx="50%"
               cy="50%"
-              labelLine={false}
-              label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-              outerRadius={100}
-              fill="#8884d8"
+              innerRadius={60}
+              outerRadius={80}
+              paddingAngle={5}
               dataKey="value"
             >
               {chartData.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
               ))}
             </Pie>
-            <Tooltip formatter={(value) => `₹${value}`} />
-            <Legend />
+            <Tooltip 
+                formatter={(value) => `₹${value}`}
+                contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+            />
+            <Legend verticalAlign="bottom" height={36} iconType="circle" />
           </PieChart>
         </ResponsiveContainer>
       </Box>

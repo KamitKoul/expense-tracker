@@ -39,7 +39,7 @@ export default function Login() {
     <Grid container sx={{ minHeight: '100vh' }}>
       {/* Left Side: Branding/Visual */}
       <Grid 
-        item xs={false} md={6} 
+        item xs={false} md={4} 
         sx={{ 
           background: 'linear-gradient(rgba(37, 99, 235, 0.8), rgba(124, 58, 237, 0.8)), url("https://images.unsplash.com/photo-1554224155-1696413565d3?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80")',
           backgroundSize: 'cover',
@@ -64,7 +64,7 @@ export default function Login() {
       </Grid>
 
       {/* Right Side: Form */}
-      <Grid item xs={12} md={6} component={Paper} elevation={0} square sx={{ display: 'flex', alignItems: 'center', bgcolor: '#f8fafc' }}>
+      <Grid item xs={12} md={8} component={Paper} elevation={0} square sx={{ display: 'flex', alignItems: 'center', bgcolor: '#f8fafc' }}>
         <Box sx={{ py: 8, px: { xs: 4, sm: 8, md: 10 }, display: 'flex', flexDirection: 'column', width: '100%', maxWidth: 550, mx: 'auto' }}>
           <Box sx={{ mb: 4 }}>
             <Typography variant="h4" fontWeight="800" color="primary" gutterBottom sx={{ letterSpacing: -0.5 }}>

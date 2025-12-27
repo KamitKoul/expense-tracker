@@ -7,6 +7,7 @@ import ExpenseSummary from "../components/ExpenseSummary";
 import ExpenseChart from "../components/ExpenseChart";
 import SpendingTrendChart from "../components/SpendingTrendChart";
 import SpendingPrediction from "../components/SpendingPrediction";
+import SmartInsights from "../components/SmartInsights";
 import { 
   Typography, 
   Box, 
@@ -30,7 +31,8 @@ import {
   ListItemIcon,
   ListItemText,
   ListItemButton,
-  Divider
+  Divider,
+  TextField
 } from "@mui/material";
 import LogoutIcon from '@mui/icons-material/Logout';
 import AddIcon from '@mui/icons-material/Add';
@@ -41,6 +43,7 @@ import ReceiptIcon from '@mui/icons-material/Receipt';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import SettingsIcon from '@mui/icons-material/Settings';
 import ErrorBoundary from "../components/ErrorBoundary";
+import SavingsIcon from '@mui/icons-material/Savings';
 
 const drawerWidth = 260;
 
@@ -54,6 +57,10 @@ export default function Expenses() {
   // Dialog State
   const [openForm, setOpenForm] = useState(false);
   const [editingExpense, setEditingExpense] = useState(null);
+  
+  // Budget State
+  const [budget, setBudget] = useState(user?.monthlyBudget || 0);
+  const [isUpdatingBudget, setIsUpdatingBudget] = useState(false);
 
   // Filter states
   const [filterMonth, setFilterMonth] = useState(new Date().getMonth() + 1);
@@ -97,6 +104,17 @@ export default function Expenses() {
   const handleCloseForm = () => {
     setOpenForm(false);
     setEditingExpense(null);
+  };
+
+  const updateBudget = async () => {
+    try {
+        await API.put("/users/budget", { budget: Number(budget) });
+        setIsUpdatingBudget(false);
+        // We might want to update local user context too, but for now just refresh local state
+    } catch (err) {
+        console.error(err);
+        alert("Failed to update budget");
+    }
   };
 
   return (
@@ -153,6 +171,30 @@ export default function Expenses() {
           </List>
 
           <Box sx={{ mt: 'auto', p: 3 }}>
+              {/* Budget Quick Set */}
+              <Box sx={{ mb: 4, px: 1 }}>
+                  <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: 1, mb: 1, display: 'block' }}>
+                      Monthly Goal
+                  </Typography>
+                  {isUpdatingBudget ? (
+                      <Box sx={{ display: 'flex', gap: 1 }}>
+                          <TextField 
+                            size="small" 
+                            variant="standard" 
+                            value={budget} 
+                            onChange={(e) => setBudget(e.target.value)}
+                            sx={{ input: { color: 'white', fontWeight: 700 }, '& .MuiInput-underline:before': { borderBottomColor: 'rgba(255,255,255,0.3)' } }}
+                          />
+                          <IconButton size="small" onClick={updateBudget} sx={{ color: '#10b981' }}><AddIcon fontSize="small" /></IconButton>
+                      </Box>
+                  ) : (
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <Typography variant="h6" sx={{ fontWeight: 700 }}>₹{budget}</Typography>
+                          <IconButton size="small" onClick={() => setIsUpdatingBudget(true)} sx={{ color: 'rgba(255,255,255,0.3)' }}><SettingsIcon fontSize="small" /></IconButton>
+                      </Box>
+                  )}
+              </Box>
+
               <Divider sx={{ bgcolor: 'rgba(255,255,255,0.1)', mb: 3 }} />
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
                   <Avatar sx={{ bgcolor: '#3b82f6', width: 40, height: 40 }}>{user?.name?.[0]}</Avatar>
@@ -224,10 +266,11 @@ export default function Expenses() {
               <Grid container spacing={4}>
                   {/* Top Row: Summary & Prediction */}
                   <Grid size={{ xs: 12, lg: 8 }}>
-                      <ExpenseSummary year={filterYear} month={filterMonth} refreshTrigger={filteredExpenses} />
+                      <ExpenseSummary year={filterYear} month={filterMonth} refreshTrigger={filteredExpenses} budget={Number(budget)} />
                   </Grid>
                   <Grid size={{ xs: 12, lg: 4 }}>
                       <SpendingPrediction currentSpending={totalSpent} month={filterMonth} year={filterYear} />
+                      <SmartInsights expenses={filteredExpenses} budget={Number(budget)} totalSpent={totalSpent} />
                   </Grid>
 
                   {/* Middle Row: Trends & Charts */}

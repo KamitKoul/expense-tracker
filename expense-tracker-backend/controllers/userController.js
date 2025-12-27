@@ -84,7 +84,28 @@ const getMe = async (req, res) => {
       id: user.id,
       name: user.name,
       email: user.email,
+      monthlyBudget: user.monthlyBudget || 0,
     });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// @desc   Update user budget
+// @route  PUT /api/users/budget
+const updateBudget = async (req, res) => {
+  try {
+    const { budget } = req.body;
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    user.monthlyBudget = budget;
+    await user.save();
+
+    res.json({ monthlyBudget: user.monthlyBudget });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -94,4 +115,5 @@ module.exports = {
   registerUser,
   loginUser,
   getMe,
+  updateBudget,
 };

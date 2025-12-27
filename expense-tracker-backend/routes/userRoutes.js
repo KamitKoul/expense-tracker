@@ -5,6 +5,7 @@ const {
   loginUser,
   getMe,
   updateBudget,
+  deleteAccount,
 } = require("../controllers/userController");
 const { protect } = require("../middleware/authMiddleware");
 

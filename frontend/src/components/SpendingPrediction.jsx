@@ -2,6 +2,11 @@ import { Paper, Typography, Box, LinearProgress } from "@mui/material";
 import BoltIcon from '@mui/icons-material/Bolt';
 
 export default function SpendingPrediction({ currentSpending, month, year }) {
+  // Ensure currentSpending is a valid number
+  if (typeof currentSpending !== 'number' || isNaN(currentSpending)) {
+    return null;
+  }
+  
   const daysInMonth = (y, m) => new Date(y, m, 0).getDate();
   const today = new Date();
   
@@ -11,6 +16,8 @@ export default function SpendingPrediction({ currentSpending, month, year }) {
   if (!isCurrentMonth) return null;
 
   const currentDay = today.getDate();
+  if (currentDay === 0) return null; // Avoid division by zero
+
   const totalDays = daysInMonth(year, month);
   const dailyAverage = currentSpending / currentDay;
   const predictedTotal = dailyAverage * totalDays;

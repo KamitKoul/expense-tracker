@@ -2,7 +2,6 @@ import { useState, useContext } from "react";
 import AuthContext from "../context/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
 import { 
-  Container, 
   TextField, 
   Button, 
   Typography, 
@@ -10,9 +9,10 @@ import {
   Box, 
   Alert,
   InputAdornment,
-  IconButton 
+  IconButton,
+  Grid 
 } from "@mui/material";
-import { Visibility, VisibilityOff, Email, Lock, Person } from "@mui/icons-material";
+import { Visibility, VisibilityOff, Email, Lock, Person, AutoGraph } from "@mui/icons-material";
 
 export default function Register() {
   const [name, setName] = useState("");
@@ -35,25 +35,42 @@ export default function Register() {
   };
 
   return (
-    <Box 
-      sx={{ 
-        minHeight: '100vh', 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center',
-        background: 'linear-gradient(135deg, #e0e7ff 0%, #f3e8ff 100%)'
-      }}
-    >
-      <Container maxWidth="xs">
-        <Paper elevation={3} sx={{ p: 4, borderRadius: 4 }}>
-          <Box sx={{ textAlign: 'center', mb: 3 }}>
-            <Typography variant="h4" color="primary" gutterBottom>
-              Create Account
-            </Typography>
-            <Typography variant="body2" color="textSecondary">
-              Join us to track your expenses efficiently
-            </Typography>
-          </Box>
+    <Grid container sx={{ minHeight: '100vh' }}>
+      {/* Left Side: Branding/Visual */}
+      <Grid 
+        item xs={false} sm={4} md={7} 
+        sx={{ 
+          background: 'linear-gradient(rgba(124, 58, 237, 0.8), rgba(37, 99, 235, 0.8)), url("https://images.unsplash.com/photo-1460925895917-afdab827c52f?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80")',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'center',
+          color: 'white',
+          p: 4
+        }}
+      >
+        <Box sx={{ maxWidth: 450, textAlign: 'center' }}>
+          <AutoGraph sx={{ fontSize: 80, mb: 2 }} />
+          <Typography variant="h2" fontWeight="800" gutterBottom>
+            Start Your Journey
+          </Typography>
+          <Typography variant="h5">
+            Join thousands of users who are making smarter financial decisions every day.
+          </Typography>
+        </Box>
+      </Grid>
+
+      {/* Right Side: Form */}
+      <Grid item xs={12} sm={8} md={5} component={Paper} elevation={6} square sx={{ display: 'flex', alignItems: 'center' }}>
+        <Box sx={{ my: 8, mx: 4, display: 'flex', flexDirection: 'column', width: '100%', maxWidth: 400, marginLeft: 'auto', marginRight: 'auto' }}>
+          <Typography variant="h4" fontWeight="700" color="secondary" gutterBottom>
+            Create Account
+          </Typography>
+          <Typography variant="body1" color="textSecondary" sx={{ mb: 4 }}>
+            Sign up to start tracking and analyzing your expenses.
+          </Typography>
 
           {error && <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>{error}</Alert>}
 
@@ -101,36 +118,36 @@ export default function Register() {
                 ),
                 endAdornment: (
                   <InputAdornment position="end">
-                    <IconButton
-                      onClick={() => setShowPassword(!showPassword)}
-                      edge="end"
-                    >
+                    <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
                       {showPassword ? <VisibilityOff /> : <Visibility />}
                     </IconButton>
                   </InputAdornment>
                 ),
               }}
             />
+            
             <Button 
               fullWidth 
               variant="contained" 
+              color="secondary"
               type="submit" 
               size="large"
-              sx={{ mt: 3, mb: 2, height: 48 }}
+              sx={{ mt: 4, mb: 2, height: 56, fontSize: '1.1rem' }}
             >
               Sign Up
             </Button>
+            
             <Box sx={{ mt: 2, textAlign: 'center' }}>
               <Typography variant="body2" color="textSecondary">
                 Already have an account?{' '}
-                <Link to="/login" style={{ textDecoration: 'none', fontWeight: 600, color: '#2563eb' }}>
+                <Link to="/login" style={{ textDecoration: 'none', fontWeight: 600, color: '#7c3aed' }}>
                   Sign In
                 </Link>
               </Typography>
             </Box>
           </Box>
-        </Paper>
-      </Container>
-    </Box>
+        </Box>
+      </Grid>
+    </Grid>
   );
 }

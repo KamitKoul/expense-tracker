@@ -166,11 +166,47 @@ const deleteExpense = async (req, res) => {
   }
 };
 
+// @desc   Get spending trends (last 6 months)
+// @route  GET /api/expenses/trends
+const getSpendingTrends = async (req, res) => {
+  try {
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
+    sixMonthsAgo.setDate(1);
+
+    const trends = await Expense.aggregate([
+      {
+        $match: {
+          userId: new mongoose.Types.ObjectId(req.user.id),
+          expenseDate: { $gte: sixMonthsAgo }
+        }
+      },
+      {
+        $group: {
+          _id: {
+            year: { $year: "$expenseDate" },
+            month: { $month: "$expenseDate" }
+          },
+          total: { $sum: "$amount" }
+        }
+      },
+      {
+        $sort: { "_id.year": 1, "_id.month": 1 }
+      }
+    ]);
+
+    res.json(trends);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
   createExpense,
   getExpenses,
   getMonthlyTotal,
   getCategorySummary,
   updateExpense,
-  deleteExpense
+  deleteExpense,
+  getSpendingTrends
 };

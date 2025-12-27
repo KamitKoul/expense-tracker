@@ -2,7 +2,6 @@ import { useState, useContext } from "react";
 import AuthContext from "../context/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
 import { 
-  Container, 
   TextField, 
   Button, 
   Typography, 
@@ -10,9 +9,12 @@ import {
   Box, 
   Alert,
   InputAdornment,
-  IconButton
+  IconButton,
+  Grid,
+  Checkbox,
+  FormControlLabel
 } from "@mui/material";
-import { Visibility, VisibilityOff, Email, Lock } from "@mui/icons-material";
+import { Visibility, VisibilityOff, Email, Lock, AutoGraph } from "@mui/icons-material";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -34,25 +36,42 @@ export default function Login() {
   };
 
   return (
-    <Box 
-      sx={{ 
-        minHeight: '100vh', 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center',
-        background: 'linear-gradient(135deg, #e0e7ff 0%, #f3e8ff 100%)'
-      }}
-    >
-      <Container maxWidth="xs">
-        <Paper elevation={3} sx={{ p: 4, borderRadius: 4 }}>
-          <Box sx={{ textAlign: 'center', mb: 3 }}>
-            <Typography variant="h4" color="primary" gutterBottom>
-              Welcome Back
-            </Typography>
-            <Typography variant="body2" color="textSecondary">
-              Enter your credentials to access your account
-            </Typography>
-          </Box>
+    <Grid container sx={{ minHeight: '100vh' }}>
+      {/* Left Side: Branding/Visual */}
+      <Grid 
+        item xs={false} sm={4} md={7} 
+        sx={{ 
+          background: 'linear-gradient(rgba(37, 99, 235, 0.8), rgba(124, 58, 237, 0.8)), url("https://images.unsplash.com/photo-1554224155-1696413565d3?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80")',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'center',
+          color: 'white',
+          p: 4
+        }}
+      >
+        <Box sx={{ maxWidth: 450, textAlign: 'center' }}>
+          <AutoGraph sx={{ fontSize: 80, mb: 2 }} />
+          <Typography variant="h2" fontWeight="800" gutterBottom>
+            Take Control of Your Wealth
+          </Typography>
+          <Typography variant="h5">
+            Smart insights and predictions to help you save more and spend wiser.
+          </Typography>
+        </Box>
+      </Grid>
+
+      {/* Right Side: Form */}
+      <Grid item xs={12} sm={8} md={5} component={Paper} elevation={6} square sx={{ display: 'flex', alignItems: 'center' }}>
+        <Box sx={{ my: 8, mx: 4, display: 'flex', flexDirection: 'column', width: '100%', maxWidth: 400, marginLeft: 'auto', marginRight: 'auto' }}>
+          <Typography variant="h4" fontWeight="700" color="primary" gutterBottom>
+            Welcome Back
+          </Typography>
+          <Typography variant="body1" color="textSecondary" sx={{ mb: 4 }}>
+            Sign in to your dashboard to manage your expenses.
+          </Typography>
 
           {error && <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>{error}</Alert>}
 
@@ -86,36 +105,45 @@ export default function Login() {
                 ),
                 endAdornment: (
                   <InputAdornment position="end">
-                    <IconButton
-                      onClick={() => setShowPassword(!showPassword)}
-                      edge="end"
-                    >
+                    <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
                       {showPassword ? <VisibilityOff /> : <Visibility />}
                     </IconButton>
                   </InputAdornment>
                 ),
               }}
             />
+            
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1 }}>
+              <FormControlLabel
+                control={<Checkbox value="remember" color="primary" />}
+                label="Remember me"
+              />
+              <Link to="#" style={{ textDecoration: 'none', fontSize: '0.875rem', fontWeight: 600, color: '#2563eb' }}>
+                Forgot password?
+              </Link>
+            </Box>
+
             <Button 
               fullWidth 
               variant="contained" 
               type="submit" 
               size="large"
-              sx={{ mt: 3, mb: 2, height: 48 }}
+              sx={{ mt: 4, mb: 2, height: 56, fontSize: '1.1rem' }}
             >
               Sign In
             </Button>
+            
             <Box sx={{ mt: 2, textAlign: 'center' }}>
               <Typography variant="body2" color="textSecondary">
                 Don't have an account?{' '}
                 <Link to="/register" style={{ textDecoration: 'none', fontWeight: 600, color: '#2563eb' }}>
-                  Sign Up
+                  Create an account
                 </Link>
               </Typography>
             </Box>
           </Box>
-        </Paper>
-      </Container>
-    </Box>
+        </Box>
+      </Grid>
+    </Grid>
   );
 }

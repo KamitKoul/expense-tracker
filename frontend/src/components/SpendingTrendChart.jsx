@@ -14,27 +14,34 @@ import API from "../api";
 export default function SpendingTrendChart({ refreshTrigger }) {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
+    let active = true;
     const fetchTrends = async () => {
       try {
         const res = await API.get("/expenses/trends");
-        // Format data for chart: { month: "Jan", total: 100 }
-        const formatted = res.data.map(item => ({
-          name: new Date(item._id.year, item._id.month - 1).toLocaleString('default', { month: 'short' }),
-          total: item.total
-        }));
-        setData(formatted);
+        if (active) {
+          const formatted = Array.isArray(res.data) ? res.data.map(item => ({
+            name: new Date(item._id.year, item._id.month - 1).toLocaleString('default', { month: 'short' }),
+            total: Number(item.total) || 0
+          })) : [];
+          setData(formatted);
+          setError(false);
+        }
       } catch (err) {
         console.error(err);
+        if (active) setError(true);
       } finally {
-        setLoading(false);
+        if (active) setLoading(false);
       }
     };
     fetchTrends();
+    return () => { active = false; };
   }, [refreshTrigger]);
 
   if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}><CircularProgress /></Box>;
+  if (error) return <Box sx={{ p: 4, color: 'error.main' }}>Failed to load trends</Box>;
 
   return (
     <Paper elevation={0} sx={{ p: 3, borderRadius: 4, border: '1px solid #f0f0f0', height: '100%' }}>
